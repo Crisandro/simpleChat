@@ -7,7 +7,8 @@ As the Demo is hosted on a free Heroku account, the servers its hosted on enter 
 
 ### About:
 
-This is a real-time chat application built using React (Create React App on the frontend) and NodeJS/Express Backend.
+This is a real-time chat application built using React React on the frontend with MUI and NodeJS/Express Backend. I also added a mysql for the database.
+Note that the database being used is free and it has some limitations and is not recomended for production use except for testing.
 
 Users are able message other users in real-time.
 
@@ -15,7 +16,8 @@ Users are able message other users in real-time.
 
 * NodeJS/Express
 * React (Create React App)
-* mysql
+* MUI
+* mysql (db4free.net) 
 * SASS
 
 ## Software 
