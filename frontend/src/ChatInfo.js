@@ -1,5 +1,5 @@
 import React,{useState, useEffect} from "react"
-import {List, Box, Modal, Card, CardContent, Typography, CardActions, Button, Paper, Stack, TextField, Avatar, Tooltip, Alert, AlertTitle} from '@mui/material/'
+import {Box, Card, CardContent, Typography, CardActions, Button, Paper, Stack, TextField, Avatar, Tooltip, Alert, AlertTitle} from '@mui/material/'
 import LoadingButton from '@mui/lab/LoadingButton'
 import SendIcon from '@mui/icons-material/Send'
 import Axios from "axios"
@@ -28,6 +28,7 @@ export default function ChatInfo(props){
     const [loading, setLoading] = useState(false)
     const [ message, setMessage ] = useState("")
     const [ chatHistory, setChatHistory ] = useState([{}])
+    console.log(props.userDetails)
     const [open, setOpen] = useState(false);
 
     function stringAvatar(name) {
@@ -81,40 +82,37 @@ export default function ChatInfo(props){
             return  monthString + " " + day + " | " + finalhour + ":" + min + " " + isPM
         } 
     }
-    
-    useEffect(()=>{
-        let chatwindow = document.getElementById("chatWindow")
-        chatwindow.scrollTo(0, chatwindow.scrollHeight)
-
-        Axios.post("http://localhost:3001/api/messages",props.userDetails)
-        .then((response) => {
-            setChatHistory(response.data)
-        });
-    },[props.userDetails])
+    Axios.post("http://localhost:3001/api/messages",props.userDetails)
+    .then((response) => {
+        setChatHistory(response.data)
+        props.setOpen(false)
+    });
 
    
 
     const sendMessage = () => {
-        setLoading(val => !val)
-        Axios.post("http://localhost:3001/api/send",{message:message,to: props.userDetails.seconduser_id})
+        setLoading(true)
+        Axios.post("http://localhost:3001/api/send",{message:message,to: props.userDetails.id})
         .then((response) => {});
         Axios.post("http://localhost:3001/api/messages",props.userDetails)
         .then((response) => {
             setChatHistory(response.data)
-            setLoading(val => !val)
+            setLoading(false)
             setMessage("")
         });
     }
 
     const History = chatHistory.map(messages => 
         <div 
+            id="chatWindow"
             key={messages.chat_id}
-            className={messages.seconduser_id === props.userDetails.seconduser_id ? 'Endflex' : 'Startflex'}
+            className={messages.seconduser_id === props.userDetails.id ? 'Endflex' : 'Startflex'}
         >
             <Card>
                 <CardContent>
                     <Typography gutterBottom color="grey" variant="span" component="div" sx={{textAlign: messages.seconduser_id === props.userDetails.seconduser_id ? 'right':'left' }}>
-                        {messages.seconduser_id === props.userDetails.seconduser_id ? 'You  ' + messages.date_sent === undefined ? "" : dateString(messages.date_sent) : props.userDetails.firstname + "  " + messages.date_sent === undefined ? "" : dateString(messages.date_sent)}
+                        {messages.seconduser_id === props.userDetails.id ? 'You  ' : props.userDetails.username + "  " }
+                        {messages.date_sent === undefined ? "" : "@" + dateString(messages.date_sent)}
                     </Typography>
                     <Typography variant="h7" >
                         {messages.chat_message}
@@ -124,13 +122,11 @@ export default function ChatInfo(props){
                     <Button size="small" onClick={() => handleDeleteMessage(messages)} >Delete</Button>
                 </CardActions>
             </Card>
-            
         </div>
     )
 
     const handleDeleteMessage = (message) => {
         setOpen(true)
-        console.log(message)
         Axios.post("http://localhost:3001/api/deletemessage",message)
         .then((response) => {});
         Axios.post("http://localhost:3001/api/messages",props.userDetails)
@@ -141,56 +137,40 @@ export default function ChatInfo(props){
 
     return(
         <Paper elevation={24} sx={{
-            height: '98%',
+            height: '100%',
             width: '100%',
             display: 'flex', 
-            flexDirection:'column', 
-            justifyContent:'flex-end',
+            flexDirection:'column',
             alignItems:'center',
-            gap: '10px'
         }}>
             <Paper elevation={2} sx={{
                 width: '100%',
                 display: 'flex',
                 alignItems:'center',
                 gap: '20px',
-                padding: '15px 15px',
+                padding: '0px 15px',
+                height: '8%',
                 marginLeft: '15px',
-
             }}>
                 <Avatar {...stringAvatar(`${props.userDetails.firstname} ${props.userDetails.lastname}`)} />
                 {props.userDetails.firstname}
             </Paper>
-            <List
+            <Stack
                 sx={{
-                    height: '100%',
-                    minHeight: '80%',
                     width: '100%',
-                    padding: 0,
-                    position: 'relative',
-                    overflowY: 'auto',
+                    height: '82%',
+                    overflowY: 'scroll',
+                    marginBottom: '10px'
                 }}
-                elevation={24}
+                direction="column-reverse"
+                alignItems="stretch"
+                spacing={2}
             >
-                <Stack
-                    id="chatWindow"
-                    sx={{
-                        width: '98%',
-                        marginBottom: '10px',
-                        bottom: '0',
-                    }}
-                    direction="column"
-                    justifyContent="flex-end"
-                    alignItems="stretch"
-                    spacing={2}
-                >
-                    {History}
-                </Stack>
-            </List>
-            
-            <Box sx={{width:'100%',display:'flex',gap: '2px'}}>
+                {History}
+            </Stack>
+            <Box sx={{height: '8%',width:'100%',display:'flex',justifyContent:'space-evenly',position:'relative',bottom: '.5vw', alignItems: 'center'}}>
                 <TextField
-                    fullWidth 
+                    sx={{width: '90%'}}
                     id="message"
                     label="Message"
                     multiline
@@ -199,7 +179,7 @@ export default function ChatInfo(props){
                     maxRows={4}
                 />
                 <LoadingButton
-                    size="large"
+                    sx={{height: '75%', width: '8%'}}
                     color="info"
                     onClick={sendMessage}
                     loading={loading}
