@@ -62,13 +62,16 @@ app.use(session({
 }))
 
 app.get('/',cors(corsOption),(req,res)=>{
-    res.send({ 
-        sessionID : req.session.id, 
-        user: req.session.user,
-        username: req.session.user[0].username,
-        firstname: req.session.user[0].firstname,
-        lastname: req.session.user[0].lastname
-    })
+    // db.query(`SELECT contacts FROM users WHERE id = 5`,
+    // (err, result) =>  {
+    //     //console.log(result[0].contacts.split(","))
+    //     let ids = result[0].contacts.split(",")
+    //     db.query(`SELECT * FROM users WHERE id IN (${ids}) `,
+    //     (err, result) =>  {
+    //         console.log(result)
+            
+    //     })
+    // })
 })
 
 app.post("/api/register",cors(corsOption), (req, res) => {
@@ -78,7 +81,7 @@ app.post("/api/register",cors(corsOption), (req, res) => {
         if (err) {
             console.log(err);
         }
-        db.query(`INSERT INTO users (id, username, password, firstname, lastname) VALUES (null, '${username}','${hash}','${firstname}','${lastname}')`,
+        db.query(`INSERT INTO users (id, username, password, firstname, lastname, contacts) VALUES (null, '${username}','${hash}','${firstname}','${lastname}', '')`,
         (err, result) => {
             res.send({result: `${username} has been added`})
         });
@@ -120,31 +123,78 @@ app.get("/api/login",cors(corsOption),(req,res)=>{
     }
 })
 
+app.get("/api/loggedInUser",cors(corsOption),(req,res)=>{
+    const {id, username, firstname, lastname} = req.session.user[0]
+    res.send({id:id, username: username, firstname: firstname, lastname: lastname})
+})
+
 app.post("/api/logout",cors(corsOption),(req,res)=>{
     req.session = null
     res.send({ loggedIn: false })
 })
 
 app.get("/api/users",cors(corsOption),(req,res) => {
-    db.query(`SELECT DISTINCT seconduser_id, SUM(CASE WHEN view is null THEN 1 ELSE 0 END) AS unread, users.firstname, users.lastname FROM chat LEFT JOIN users ON chat.seconduser_id = users.id WHERE NOT users.id = ${req.session.user[0].id} GROUP BY seconduser_id`,
-    (err, result) => {
-        res.send(result)
+    db.query(`SELECT contacts FROM users WHERE id = ${req.session.user[0].id}`,
+    (err, result) =>  {
+        let found = false
+        if( result[0].contacts === "" ){
+            res.send([])
+        }else{
+            let ids = result[0].contacts.split(",")
+            let quertIds = ids.slice(1)
+            db.query(`SELECT DISTINCT users.id, firstname, lastname, username, MAX(chat.date_sent) FROM users INNER JOIN chat ON chat.firstuser_id = users.id OR chat.seconduser_id = users.id  WHERE id IN ( ${quertIds} ) GROUP BY users.id ORDER BY MAX(chat.date_sent) DESC`,
+            (err, result) =>  {
+                res.send(result)
+            })
+        }
+        
     })
 })
 
 app.post("/api/send",cors(corsOption),(req,res) => {
     const {message,to} = req.body;
-    db.query(`INSERT INTO chat (chat_id, chat_message, date_sent, firstuser_id, seconduser_id, view) VALUE (null, '${message}', NOW(), ${req.session.user[0].id}, ${to}, null)`,
-    (err, result) => {
-        res.send({message: "done"})
+
+    db.query(`SELECT contacts FROM users WHERE id = ${req.session.user[0].id}`,
+    (err, result) =>  {
+        let found = false
+        if( result[0].contacts === ""){
+            db.query(`UPDATE users SET contacts = '${to}' WHERE id = ${req.session.user[0].id}`,
+            (err, result) =>  {})
+            db.query(`UPDATE users SET contacts = CONCAT(contacts,',${req.session.user[0].id}') WHERE id = ${to}`,
+            (err, result) =>  {})
+            db.query(`INSERT INTO chat (chat_id, chat_message, date_sent, firstuser_id, seconduser_id, view) VALUE (null, '${message}', NOW(), ${req.session.user[0].id}, ${to}, null)`,
+            (err, result) => {
+                res.send({message: "done"})
+            })
+        }else{
+            let ids = result[0].contacts.split(",")
+            ids.map( ids => ids != to ? found = false : found = true )
+            if(found){
+                db.query(`INSERT INTO chat (chat_id, chat_message, date_sent, firstuser_id, seconduser_id, view) VALUE (null, '${message}', NOW(), ${req.session.user[0].id}, ${to}, null)`,
+                (err, result) => {
+                    res.send({message: "done"})
+                })
+
+            }else{
+                db.query(`UPDATE users SET contacts = '${result[0].contacts},${to}' WHERE id = ${req.session.user[0].id}`,
+                (err, result) =>  {})
+                db.query(`UPDATE users SET contacts = CONCAT(contacts,',${req.session.user[0].id}') WHERE id = ${to}`,
+                (err, result) =>  {})
+                db.query(`INSERT INTO chat (chat_id, chat_message, date_sent, firstuser_id, seconduser_id, view) VALUE (null, '${message}', NOW(), ${req.session.user[0].id}, ${to}, null)`,
+                (err, result) => {
+                    res.send({message: "done"})
+                })
+            }
+            
+        }
     })
 })
 
 app.post("/api/messages",cors(corsOption),(req,res) => {
-    const {seconduser_id} = req.body;
-    db.query(`SELECT * FROM chat WHERE firstuser_id = ${req.session.user[0].id} OR seconduser_id = ${req.session.user[0].id}`,
+    const {id} = req.body;
+    db.query(`SELECT * FROM chat WHERE firstuser_id = ${req.session.user[0].id} OR seconduser_id = ${req.session.user[0].id} ORDER BY date_sent DESC`,
     (err, result) => {
-        const finaldata = result.filter( data => data.firstuser_id === seconduser_id || data.seconduser_id === seconduser_id )
+        const finaldata = result.filter( data => data.firstuser_id === id || data.seconduser_id === id )
         res.send(finaldata)
     })
 })
@@ -157,7 +207,7 @@ app.post("/api/deletemessage",cors(corsOption),(req,res) => {
 
 app.post("/api/searchusers",cors(corsOption),(req,res) => {
     const {search} = req.body;
-    db.query(`SELECT id AS seconduser_id, firstname, lastname, username FROM users WHERE NOT id = ${req.session.user[0].id} AND firstname LIKE '${search}%' OR lastname LIKE '${search}%'`,
+    db.query(`SELECT id , firstname, lastname, username FROM users WHERE NOT id = ${req.session.user[0].id} AND firstname LIKE '${search}%' OR lastname LIKE '${search}%'`,
     (err, result) => {
         res.send(result)
     })
