@@ -33,6 +33,17 @@ function stringToColor(string) {
     return color;
 }
 
+function stringAvatar(name) {
+    let firstLetter = name.split(' ')[0][0] === undefined ?  '' : name.split(' ')[0][0]
+    let secondLetter = name.split(' ')[1][0] === undefined ?  '' : name.split(' ')[1][0]
+    return {
+        sx: {
+            bgcolor: stringToColor(name),
+        },
+        children: `${firstLetter}`,
+    };
+}
+
 export default function ContactList(props){
     const [ userList , setUserList ] = useState([{}])
     const [ searchUser, setSearchUser ] = useState({
@@ -40,10 +51,15 @@ export default function ContactList(props){
     })
     const [ searchedUsers, setSearchedUsers ] = useState([])
 
+    // useEffect(()=> {
+        
+    // },[])
+
     Axios.get("http://localhost:3001/api/users")
     .then((response) => {
         setUserList(response.data)
     });
+    
 
     useEffect(() => {
         Axios.post(`http://localhost:3001/api/searchusers`,searchUser)
@@ -53,19 +69,10 @@ export default function ContactList(props){
     }, [searchUser])
 
     const searchFunction = (event) => {
-        setSearchUser({ search:event.target.value })
+        setSearchUser({ search: event.target.value })
     }
     
-    function stringAvatar(name) {
-        let firstLetter = name.split(' ')[0][0] === undefined ?  '' : name.split(' ')[0][0]
-        let secondLetter = name.split(' ')[1][0] === undefined ?  '' : name.split(' ')[1][0]
-        return {
-            sx: {
-                bgcolor: stringToColor(name),
-            },
-            children: `${firstLetter}${secondLetter}`,
-        };
-    }
+    
 
     const ListofUsers = userList.map( userData => {
         return (
@@ -118,12 +125,15 @@ export default function ContactList(props){
             aria-label="contacts"
             elevation={2}
         >
-            <ListItem>
-                <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                    <AccountCircle sx={{ color: 'action.active', mr: 1, my: 0.5 }} />
-                    <TextField id="search" label="search users" variant="standard" onChange={searchFunction} value={searchUser.search} />
-                </Box>
+           <ListItem sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                <AccountCircle sx={{ color: 'action.active', mr: 1, my: 0.5 }} />
+                <TextField id="search" label="search users" variant="standard" onChange={searchFunction} value={searchUser.search} />
             </ListItem>
+            {userList.length === 0 && 
+                <ListItem sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                    <ListItemText primary={`search for a user`} />
+                </ListItem>
+            }
             {searchUser.search === "" ? ListofUsers : Listofsearch} 
         </Paper>
     )
