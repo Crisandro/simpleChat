@@ -10,8 +10,6 @@ Moreover, the app is not yet deployed online because it still have some limitati
 Users are able to login and message other users in real-time.
 it uses cookies, so that the user is still logged in after refresh
 
-this is made for my 4th assessment in a job application.
-
 ### Features:
 *	Login and account functionality
 *	Contact List 
