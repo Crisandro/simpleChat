@@ -2,16 +2,11 @@
 
 ### Deployed App: 
  Simple Chat App link: https://crisandro.github.io/SimpleChat-frontend/
- the server is deployed in https://render.com/
- the database I use for the app is db4free.net 
 
 ### About:
 
 This repository only has the frontend of the app, the backend is running in a different repo that is connected with render.
 This is a real-time chat application built using React, React on the frontend with MUI and NodeJS/Express for the Backend. I also added a mysql for the database.
-Note that the database being used is free and it has some limitations and is not recomended for production use. 
-This database is also a good resource for education and to make yourself familiar with new features that were introduced in new versions.
-It also requires internet to be used to connect from the database online.
 Moreover, the app still have some limitation and I am still currently adding some features for it to meet high standard functionalities.
 
 Users are able to login and message other users in real-time.
@@ -31,9 +26,9 @@ as for now it has:
 * Session
 * React (Create React App)
 * MUI
-* mysql (PHPMyAdmin from db4free.net) 
+* mysql
 * SASS
-* CORS (For cross-origin server connections)
+* CORS (For cross-origin server compatibility)
 
 ## Software 
 Before proceeding, please ensure you have the following software installed on your computer.
@@ -41,6 +36,8 @@ Before proceeding, please ensure you have the following software installed on yo
 * Node
 * Yarn (optional but recommended)
 * Git command line tools
+* XAMPP (for the database, sql file for import is included here)
+* mysql (version 8.0.32 or up)
 
 ### Useful links
 
@@ -48,6 +45,8 @@ Before proceeding, please ensure you have the following software installed on yo
 * Download Node - https://nodejs.org/en/
 * Download Yarn CLT - https://yarnpkg.com/lang/en/docs/install/
 * Download VSCode - https://code.visualstudio.com/
+* Download XAMPP - https://www.apachefriends.org/
+* Download mysql - https://dev.mysql.com/downloads/workbench/
 
 ## Getting started
 
@@ -60,6 +59,18 @@ Clone the repo to your machine
 ```
 git clone <CloneURL>
 ```
+
+### Import the database
+
+1) Install XAMPP and mysql workbench 
+
+2) run XAMPP and start 'Apache' and 'MySQL'
+
+3) go to your browser and search for 'http://localhost/phpmyadmin/'
+
+4) create a database name it whatever you want also change the databasename on the backend file to the name of the database you created
+
+5) import the file 'simpleChatDatabase.sql' by going to the import tab in phpMyAdmin to import the tables needed for the database.
 
 ### Lunch the backend
 
