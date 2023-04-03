@@ -14,21 +14,14 @@ app.use(express.json())
 app.use(cookieParser())
 
 app.set('trust proxy', 1)
-
 app.use(cookieSession({
     name: 'session',
     keys: ["crischatkey"],
-    // sameSite: 'none',
-    // httpOnly: false,
-    // proxy: true,
-    // Cookie Options
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 24 * 60 * 60 * 1000 
 }))
 
-// parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
 
-// parse application/json
 app.use(bodyParser.json())
 
 const corsOption = {
@@ -39,10 +32,11 @@ const corsOption = {
 }
 app.use(cors(corsOption))
 
+//For database replace this with your database credintials if needed.
 const db = mysql.createConnection({
-    user: "assessmentno4",
-    host: "db4free.net",
-    password: "crisandro",
+    user: "root",
+    host: "localhost",
+    password: "",
     database: "foneapichat",
 })
 
@@ -52,31 +46,16 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     proxy: true,
-    // httpOnly: false,
     sameSite: 'none',
     cookie: {
-        secure: true, // required for cookies to work on HTTPS
+        secure: true, 
         sameSite: 'none',
-        // httpOnly: false,
     }
 }))
 
-app.get('/',cors(corsOption),(req,res)=>{
-    // db.query(`SELECT contacts FROM users WHERE id = 5`,
-    // (err, result) =>  {
-    //     //console.log(result[0].contacts.split(","))
-    //     let ids = result[0].contacts.split(",")
-    //     db.query(`SELECT * FROM users WHERE id IN (${ids}) `,
-    //     (err, result) =>  {
-    //         console.log(result)
-            
-    //     })
-    // })
-})
-
 app.post("/api/register",cors(corsOption), (req, res) => {
     const {firstname,lastname,username,password} = req.body;
-
+    //need to use bcrypt to incrypt the password saved in the database
     bcrypt.hash(password, saltRounds, (err, hash) => {
         if (err) {
             console.log(err);
@@ -90,7 +69,6 @@ app.post("/api/register",cors(corsOption), (req, res) => {
 
 app.post("/api/login",cors(corsOption), (req, res) => {
     const {username, password}= req.body;
-
     db.query(
         `SELECT * FROM users WHERE username = '${username}'`,
         (err, result) => {
