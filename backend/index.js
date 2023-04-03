@@ -37,7 +37,7 @@ const db = mysql.createConnection({
     user: "root",
     host: "localhost",
     password: "",
-    database: "foneapichat",
+    database: "nameOfYourDatabase",
 })
 
 app.use(session({
