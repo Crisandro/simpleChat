@@ -46,7 +46,6 @@ Before proceeding, please ensure you have the following software installed on yo
 * Download Yarn CLT - https://yarnpkg.com/lang/en/docs/install/
 * Download VSCode - https://code.visualstudio.com/
 * Download XAMPP - https://www.apachefriends.org/
-* Download mysql - https://dev.mysql.com/downloads/workbench/
 
 ## Getting started
 
@@ -64,13 +63,13 @@ git clone <CloneURL>
 
 1) Install XAMPP and mysql workbench 
 
-2) run XAMPP and start 'Apache' and 'MySQL'
+2) run XAMPP and start 'Apache'
 
 3) go to your browser and search for 'http://localhost/phpmyadmin/'
 
 4) create a database name it whatever you want also change the databasename on the backend file to the name of the database you created
 
-5) import the file 'simpleChatDatabase.sql' by going to the import tab in phpMyAdmin to import the tables needed for the database.
+5) import the file 'simplechat.sql' by going to the import tab in phpMyAdmin to import the tables needed for the database.
 
 ### Lunch the backend
 
