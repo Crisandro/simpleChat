@@ -5,7 +5,6 @@
 
 ### About:
 
-This repository only has the frontend of the app, the backend is running in a different repo that is connected with render.
 This is a real-time chat application built using React, React on the frontend with MUI and NodeJS/Express for the Backend. I also added a mysql for the database.
 Moreover, the app still have some limitation and I am still currently adding some features for it to meet high standard functionalities.
 
